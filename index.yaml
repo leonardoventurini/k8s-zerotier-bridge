@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  k8s-zerotier-bridge:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2022-11-13T17:44:28.359701-04:00"
+    description: K8s Zerotier Bridge
+    digest: 7151cfdecf4d60c2dc4b8995d0c97339fe35b0304018066f15e7dad373c348f7
+    name: k8s-zerotier-bridge
+    urls:
+    - k8s-zerotier-bridge-0.0.1.tgz
+    version: 0.0.1
+generated: "2022-11-13T17:44:28.358053-04:00"

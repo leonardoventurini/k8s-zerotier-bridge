@@ -7,11 +7,11 @@ A Zerotier gateway to access your non-public k8s services thru ZT subnet
 ### Kubernetes
 
 ## Helm chart to deploy a DaemonSet
-`helm repo add kubernetes-zerotier-bridge https://leunamnauj.github.io/kubernetes-zerotier-bridge/`
+`helm repo add kubernetes-zerotier-bridge https://leonardoventurini.github.io/k8s-zerotier-bridge/`
 
 `helm repo update`
 
-`helm install --name kubernetes-zerotier-bridge kubernetes-zerotier-bridge/kubernetes-zerotier-bridge`
+`helm install --name k8s-zerotier-bridge k8s-zerotier-bridge/k8s-zerotier-bridge`
 
 **Note:** You are able to configure persistence setting `persistentVolume.enabled=true` and further storage parameters as needed.
 
@@ -32,10 +32,10 @@ data:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kubernetes-zerotier-bridge
+  name: k8s-zerotier-bridge
 spec:
   containers:
-    - name: ubernetes-zerotier-bridge
+    - name: k8s-zerotier-bridge
       image: << your registry >>
       env:
       - name: NETWORK_IDS
@@ -75,10 +75,6 @@ spec:
 ## Zerotier level config
 In order to route traffic to this POD have to add the proper rule on ZT Managed Routes section, to accomplish that you have to know the ZT address assigned to the pod and your Service and/or PODs subnet.
 
-
-
-
-
 ## Local Run
 Running this locally will let you test your ZT connection and also use it without install ZT at all
 
@@ -93,11 +89,3 @@ Modify docker compose file accordly.
 ```
 docker-compose up
 ```
-
-
-
-
-## Inspired on
-
-* https://github.com/henrist/zerotier-one-docker
-* https://github.com/crocandr/docker-zerotier
