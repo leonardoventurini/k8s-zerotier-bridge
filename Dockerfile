@@ -1,9 +1,7 @@
 FROM alpine
 MAINTAINER Leonardo Venturini - leovenbag@gmail.com
 
-ENV ZEROTIER_VERSION=1.10.2
-
-RUN apk add zerotier-one=${ZEROTIER_VERSION}-r0
+RUN apk add zerotier-one
 
 COPY files/supervisor-zerotier.conf /etc/supervisor/supervisord.conf
 COPY files/entrypoint.sh /entrypoint.sh
