@@ -1,9 +1,9 @@
 environment: "dummy"
 
 zerotier_config:
-  zerotier_network_id: "8........f,"
-  zerotier_network_name: "a................z"
-  zerotier_api_accesstoken: "L.....................v"
+  zerotier_network_id: "1abcdf,2abcdf,3abcdf"
+  zerotier_network_name: "example"
+  zerotier_api_accesstoken: "abcdf1234567890"
   zerotier_authorize_member: true
   zerotier_label_service: "zerotier"
 
@@ -22,7 +22,6 @@ resources:
 
 persistentVolume:
   enabled: false
-  # storageClass: "-"
   accessModes:
     - ReadWriteOnce
   annotations: {}
