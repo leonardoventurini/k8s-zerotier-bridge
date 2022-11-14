@@ -7,7 +7,7 @@ A Zerotier gateway to access your non-public k8s services thru ZT subnet
 ### Kubernetes
 
 ## Helm chart to deploy a DaemonSet
-`helm repo add kubernetes-zerotier-bridge https://leonardoventurini.github.io/k8s-zerotier-bridge/`
+`helm repo add k8s-zerotier-bridge https://leonardoventurini.github.io/k8s-zerotier-bridge/`
 
 `helm repo update`
 
