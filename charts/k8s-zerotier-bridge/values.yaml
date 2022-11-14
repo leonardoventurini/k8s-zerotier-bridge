@@ -10,7 +10,7 @@ config:
 image:
   repository: leonardoventurini/k8s-zerotier-bridge
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 resources:
   limits:
