@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: zerotier-{{ .Values.zerotier_config.zerotier_network_name }}-bridge
+  name: zerotier-{{ .Values.config.networkName }}-bridge
   namespace: {{ .Release.Namespace }}
   labels:
-    network: {{ .Values.zerotier_config.zerotier_network_name }}
-    service: {{ .Values.zerotier_config.zerotier_label_service }}
+    network: {{ .Values.config.networkName }}
+    service: {{ .Values.config.labelService }}
     environment: {{ .Values.environment }}
 spec:
   updateStrategy:
@@ -14,17 +14,17 @@ spec:
       maxUnavailable: 10%
   selector:
     matchLabels:
-      service: {{ .Values.zerotier_config.zerotier_label_service }}
+      service: {{ .Values.config.labelService }}
   template:
     metadata:
       labels:
-        network: {{ .Values.zerotier_config.zerotier_network_name }}
-        service: {{ .Values.zerotier_config.zerotier_label_service }}
+        network: {{ .Values.config.networkName }}
+        service: {{ .Values.config.labelService }}
         environment: {{ .Values.environment }}
     spec:
       hostNetwork: true
       containers:
-      - name: zerotier-{{ .Values.zerotier_config.zerotier_network_name }}-bridge
+      - name: zerotier-{{ .Values.config.networkName }}-bridge
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         resources:
