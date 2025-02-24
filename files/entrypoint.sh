@@ -1,53 +1,55 @@
 #!/bin/bash
+set -e
 
-#zerotier-one
-supervisord -c /etc/supervisor/supervisord.conf
+# Validate required environment variables
+[ -z "$NETWORK_IDS" ] && { echo "ERROR: NETWORK_IDS not set"; exit 1; }
+[ -z "$ZTAUTHTOKEN" ] && { echo "ERROR: ZTAUTHTOKEN not set"; exit 1; }
 
-for NETWORK_ID in $(echo $NETWORK_IDS | sed 's/,/\t/g')
-do
-  [ ! -z $NETWORK_ID ] && { sleep 5; zerotier-cli join $NETWORK_ID || exit 1; }
+# Start zerotier in background
+zerotier-one -d
 
-  # waiting for Zerotier IP
-  # why 2? because you have an ipv6 and an a ipv4 address by default if everything is ok
-  IP_OK=0
-  while [ $IP_OK -lt 1 ]
-  do
-    ZTDEV=$( ip addr | grep -i zt | grep -i mtu | awk '{ print $2 }' | cut -f1 -d':' | tail -1 )
-    IP_OK=$( ip addr show dev $ZTDEV | grep -i inet | wc -l )
+# Wait for ZeroTier daemon to initialize
+sleep 5
+
+for NETWORK_ID in $(echo "$NETWORK_IDS" | tr ',' '\n'); do
+  # Retry joining network with timeout
+  MAX_RETRIES=5
+  RETRY_COUNT=0
+  until zerotier-cli join "$NETWORK_ID" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+    echo "Join attempt $((RETRY_COUNT+1))/$MAX_RETRIES failed, retrying..."
+    RETRY_COUNT=$((RETRY_COUNT+1))
     sleep 5
-
-    echo $IP_OK
-
-    # # Auto accept the new client
-    if [ $AUTOJOIN == "true"  ]
-    then
-      echo "Auto accept the new client"
-      HOST_ID="$(zerotier-cli info | awk '{print $3}')"
-      curl -s -XPOST \
-        -H "Authorization: Bearer $ZTAUTHTOKEN" \
-        -d '{"hidden":"false","config":{"authorized":true}}' \
-        "https://my.zerotier.com/api/network/$NETWORK_ID/member/$HOST_ID"
-
-      # # If hostname is provided will be set
-      if [ ! -z $HOSTNAME ]
-      then
-        echo "Set hostname"
-        curl -s -XPOST \
-          -H "Authorization: Bearer $ZTAUTHTOKEN" \
-          -d "{\"name\":\"$ZTHOSTNAME\"}" \
-          "https://my.zerotier.com/api/network/$NETWORK_ID/member/$HOST_ID"
-      fi
-    fi
-
-    echo "Waiting for a ZeroTier IP on $ZTDEV interface... Accept the new host on my.zerotier.com"
   done
-  echo "================================================="
 
+  if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "Failed to join network $NETWORK_ID after $MAX_RETRIES attempts"
+    exit 1
+  fi
+
+  # Auto-accept logic
+  if [ "$AUTOJOIN" == "true" ]; then
+    HOST_ID="$(zerotier-cli info | awk '{print $3}')"
+    curl -s -XPOST \
+      -H "Authorization: Bearer $ZTAUTHTOKEN" \
+      -d "{\"hidden\":false,\"config\":{\"authorized\":true},\"name\":\"${ZTHOSTNAME:-}\"}" \
+      "https://my.zerotier.com/api/network/$NETWORK_ID/member/$HOST_ID"
+  fi
+
+  # Wait for IP assignment (check both interface and IP)
+  IP_FOUND=0
+  while [ $IP_FOUND -lt 1 ]; do
+    ZTDEV=$(ip -o link show | awk -F': ' '/zt/{print $2}' | head -1)
+    if [ -n "$ZTDEV" ]; then
+      IP_FOUND=$(ip addr show dev $ZTDEV | grep -c 'inet')
+    fi
+    sleep 5
+    echo "Waiting for ZeroTier IP assignment on $ZTDEV..."
+  done
 done
 
+# Networking setup
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
-# something that keep the container running
-tail -f /dev/null
+exec tail -f /dev/null
